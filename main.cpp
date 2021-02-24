@@ -66,4 +66,5 @@ int main(int argc,char** argv){
     else{
         printf("%s \n","Error:could not calculate forward kinematics : ");
     }
+    ///
 }
