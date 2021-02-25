@@ -39,28 +39,52 @@ using namespace KDL;
 using namespace std;
 int main(int argc,char** argv){
     Tree my_tree;
-    kdl_parser::treeFromFile("/home/kevin/CLionProjects/KDL_test/ur3_robot.urdf",my_tree);
+    kdl_parser::treeFromFile("/home/kevin/CLionProjects/KDL_test/nimbro_adult.urdf",my_tree);
     bool exit_value;
-    Chain chain;
-    exit_value = my_tree.getChain("base","tool0",chain);
-    ChainFkSolverPos_recursive fksolver = ChainFkSolverPos_recursive(chain);
-
-    unsigned int nj = chain.getNrOfJoints();
-    JntArray jointpositions = JntArray(nj);
-
-    for(unsigned int i=0;i<nj;i++){
-        float myinput;
-        printf("Enter the position of joint %i: ",i);
-        scanf("%e",&myinput);
-        jointpositions(i)=(double)myinput;
+    Chain chain_left,chain_right ;
+    exit_value = my_tree.getChain("trunk_link","left_foot_plane_link",chain_left);
+    exit_value = my_tree.getChain("trunk_link","right_foot_plane_link",chain_right);
+    ChainFkSolverPos_recursive fksolver_left = ChainFkSolverPos_recursive(chain_left);
+    ChainFkSolverPos_recursive fksolver_right = ChainFkSolverPos_recursive(chain_right);
+    std::vector<Segment> my_segments_left=chain_left.segments;
+    std::vector<Segment> my_segments_right=chain_right.segments;
+    for (auto j = my_segments_left.begin(); j < my_segments_left.end(); ++j) {
+        cout<<j->getName()<<endl;
     }
+    for (auto j = my_segments_right.begin(); j < my_segments_right.end(); ++j) {
+        cout<<j->getName()<<endl;
+    }
+    unsigned int nj_left = chain_left.getNrOfJoints();
+    unsigned int nj_right = chain_right.getNrOfJoints();
+    JntArray jointpositions_left = JntArray(nj_left);
+    JntArray jointpositions_right = JntArray(nj_right);
 
-    Frame cartpos;
+    for(unsigned int i=0;i<nj_left;i++){
+        float myinput_left;
+        printf("Enter the position of joint %i: ",i);
+        scanf("%e",&myinput_left);
+        jointpositions_left(i)=(double)myinput_left;
+    }
+    for(unsigned int i=0;i<nj_right;i++){
+        float myinput_right;
+        printf("Enter the position of joint %i: ",i);
+        scanf("%e",&myinput_right);
+        jointpositions_right(i)=(double)myinput_right;
+    }
+    Frame cartpos_left,cartpos_right;
 
-    bool kinematics_status;
-    kinematics_status = fksolver.JntToCart(jointpositions,cartpos);
-    if(kinematics_status>=0){
-        std::cout << cartpos << std::endl;
+    bool kinematics_status_left,kinematics_status_right;
+    kinematics_status_left = fksolver_left.JntToCart(jointpositions_left,cartpos_left);
+    kinematics_status_right= fksolver_right.JntToCart(jointpositions_right,cartpos_right);
+    if(kinematics_status_left>=0){
+        std::cout << cartpos_left << std::endl;
+        printf("%s \n","Success, thanks KDL!");
+    }
+    else{
+        printf("%s \n","Error:could not calculate forward kinematics : ");
+    }
+    if(kinematics_status_right>=0){
+        std::cout << cartpos_right << std::endl;
         printf("%s \n","Success, thanks KDL!");
     }
     else{
